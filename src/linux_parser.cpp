@@ -29,8 +29,7 @@ string readFromFile(const std::string& path, const std::string& keyword=""){
           break;
         }
       } else{
-        linestream >> res;
-        std::cout << res;
+        res = input;
         break;
       }
     }
