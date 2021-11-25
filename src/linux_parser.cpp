@@ -5,12 +5,38 @@
 #include <vector>
 #include <filesystem>
 
+#include <iostream>
+
 #include "linux_parser.h"
 
 using std::stof;
 using std::string;
 using std::to_string;
 using std::vector;
+
+string readFromFile(const std::string& path, const std::string& keyword=""){
+  string res;
+  std::ifstream stream(path);
+  if (stream.is_open()) {
+    std::string line;
+    while (std::getline(stream, line)) {
+      std::istringstream linestream(line);
+      std::string input;
+      linestream >> input;
+      if(keyword != ""){
+        if(input == keyword){
+          linestream >> res;
+          break;
+        }
+      } else{
+        linestream >> res;
+        std::cout << res;
+        break;
+      }
+    }
+  }
+  return res;
+}
 
 // DONE: An example of how to read data from the filesystem
 string LinuxParser::OperatingSystem() {
@@ -67,7 +93,9 @@ vector<int> LinuxParser::Pids() {
 float LinuxParser::MemoryUtilization() { return 0.0; }
 
 // TODO: Read and return the system uptime
-long LinuxParser::UpTime() { return 0; }
+long LinuxParser::UpTime() { 
+  return stod(readFromFile(kProcDirectory + kUptimeFilename));; 
+}
 
 // TODO: Read and return the number of jiffies for the system
 long LinuxParser::Jiffies() { return 0; }
@@ -86,11 +114,14 @@ long LinuxParser::IdleJiffies() { return 0; }
 // TODO: Read and return CPU utilization
 vector<string> LinuxParser::CpuUtilization() { return {}; }
 
-// TODO: Read and return the total number of processes
-int LinuxParser::TotalProcesses() { return 0; }
+int LinuxParser::TotalProcesses() { 
+  return std::stol(readFromFile(kProcDirectory + kStatFilename, "processes"));
+ }
 
 // TODO: Read and return the number of running processes
-int LinuxParser::RunningProcesses() { return 0; }
+int LinuxParser::RunningProcesses() { 
+  return std::stol(readFromFile(kProcDirectory + kStatFilename, "procs_running"));
+ }
 
 // TODO: Read and return the command associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
