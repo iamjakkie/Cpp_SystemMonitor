@@ -14,8 +14,12 @@ using std::string;
 using std::to_string;
 using std::vector;
 
-string readFromFile(const std::string& path, const std::string& keyword=""){
-  string res;
+// TODO: Template string/long/vec
+T readFromFile(const std::string& path, const std::string& keyword="", const int& argc){
+  string res_s;
+  long res_l;
+  vector<string> res_vs;
+  vector<int> res_i;
   std::ifstream stream(path);
   if (stream.is_open()) {
     std::string line;
