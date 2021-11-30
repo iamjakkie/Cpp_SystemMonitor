@@ -14,7 +14,67 @@ using std::to_string;
 using std::vector;
 
 // TODO: Template string/long/vec
-auto readFromFile(const std::string path, int argc, std::string keyword){
+string readFromFile(const std::string path){
+  string res;
+  std::ifstream stream(path);
+  if (stream.is_open()) {
+    std::string line;
+    while (std::getline(stream, line)) {
+      std::istringstream linestream(line);
+      std::string input;
+      linestream >> input;
+      if(argc > 1){
+        std::istringstream iss(keyword);
+        vector<string> args(std::istream_iterator<string>{iss},
+                            std::istream_iterator<string>());
+        return args;
+      } else{
+        if(keyword != ""){
+          if(input == keyword){
+            linestream >> res;
+            break;
+          }
+        } else{
+          res = input;
+          break;
+        }
+      }
+    }
+  }
+  return res;
+}
+
+string readFromFile(const std::string path){
+  string res;
+  std::ifstream stream(path);
+  if (stream.is_open()) {
+    std::string line;
+    while (std::getline(stream, line)) {
+      std::istringstream linestream(line);
+      std::string input;
+      linestream >> input;
+      if(argc > 1){
+        std::istringstream iss(keyword);
+        vector<string> args(std::istream_iterator<string>{iss},
+                            std::istream_iterator<string>());
+        return args;
+      } else{
+        if(keyword != ""){
+          if(input == keyword){
+            linestream >> res;
+            break;
+          }
+        } else{
+          res = input;
+          break;
+        }
+      }
+    }
+  }
+  return res;
+}
+
+string readFromFile(const std::string path){
   string res;
   std::ifstream stream(path);
   if (stream.is_open()) {
