@@ -14,7 +14,19 @@ using std::to_string;
 using std::vector;
 
 // TODO: Template string/long/vec
-string readFromFile(const std::string path){
+string readFromFile(const string& path){
+  string res;
+  std::ifstream stream(path);
+  if (stream.is_open()) {
+    std::string line;
+    std::getline(stream, line);
+    std::istringstream linestream(line);
+    linestream >> res;
+  }
+  return res;
+}
+
+string readFromFile(const string& path, const string& keyword){
   string res;
   std::ifstream stream(path);
   if (stream.is_open()) {
@@ -23,29 +35,19 @@ string readFromFile(const std::string path){
       std::istringstream linestream(line);
       std::string input;
       linestream >> input;
-      if(argc > 1){
-        std::istringstream iss(keyword);
-        vector<string> args(std::istream_iterator<string>{iss},
-                            std::istream_iterator<string>());
-        return args;
-      } else{
-        if(keyword != ""){
+      if(keyword != ""){
           if(input == keyword){
             linestream >> res;
             break;
           }
-        } else{
-          res = input;
-          break;
-        }
       }
     }
   }
   return res;
 }
 
-string readFromFile(const std::string path){
-  string res;
+vector<string> readFromFile(const string& path, const string& keyword, const int& argc){
+  vector<string> res;
   std::ifstream stream(path);
   if (stream.is_open()) {
     std::string line;
@@ -57,51 +59,12 @@ string readFromFile(const std::string path){
         std::istringstream iss(keyword);
         vector<string> args(std::istream_iterator<string>{iss},
                             std::istream_iterator<string>());
-        return args;
-      } else{
-        if(keyword != ""){
-          if(input == keyword){
-            linestream >> res;
-            break;
-          }
-        } else{
-          res = input;
-          break;
-        }
+        res = args;
+        break;
       }
     }
   }
-  return res;
-}
-
-string readFromFile(const std::string path){
-  string res;
-  std::ifstream stream(path);
-  if (stream.is_open()) {
-    std::string line;
-    while (std::getline(stream, line)) {
-      std::istringstream linestream(line);
-      std::string input;
-      linestream >> input;
-      if(argc > 1){
-        std::istringstream iss(keyword);
-        vector<string> args(std::istream_iterator<string>{iss},
-                            std::istream_iterator<string>());
-        return args;
-      } else{
-        if(keyword != ""){
-          if(input == keyword){
-            linestream >> res;
-            break;
-          }
-        } else{
-          res = input;
-          break;
-        }
-      }
-    }
-  }
-  return res;
+  returrn res;
 }
 
 // DONE: An example of how to read data from the filesystem
@@ -160,8 +123,7 @@ float LinuxParser::MemoryUtilization() { return 0.0; }
 
 // TODO: Read and return the system uptime
 long LinuxParser::UpTime() { 
-  const string path(kProcDirectory + kUptimeFilename);
-  string val = readFromFile(string(kProcDirectory + kUptimeFilename), 1, string(""));
+  string val = readFromFile(string(kProcDirectory + kUptimeFilename));
   return stod(val);
 }
 
@@ -183,13 +145,13 @@ long LinuxParser::IdleJiffies() { return 0; }
 vector<string> LinuxParser::CpuUtilization() { return {}; }
 
 int LinuxParser::TotalProcesses() { 
-  string val = readFromFile(kProcDirectory + kStatFilename, 1, "processes")
+  string val = readFromFile(kProcDirectory + kStatFilename);
   return std::stol(val);
  }
 
 // TODO: Read and return the number of running processes
 int LinuxParser::RunningProcesses() { 
-  string val = readFromFile(kProcDirectory + kStatFilename, 1, "procs_running");
+  string val = readFromFile(kProcDirectory + kStatFilename);
   return std::stol(val);
  }
 
