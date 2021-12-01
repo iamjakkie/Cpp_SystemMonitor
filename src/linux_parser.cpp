@@ -13,7 +13,6 @@ using std::string;
 using std::to_string;
 using std::vector;
 
-// TODO: Template string/long/vec
 string readFromFile(const string& path){
   string res;
   std::ifstream stream(path);
@@ -64,7 +63,7 @@ vector<string> readFromFile(const string& path, const string& keyword, const int
       }
     }
   }
-  returrn res;
+  return res;
 }
 
 // DONE: An example of how to read data from the filesystem
