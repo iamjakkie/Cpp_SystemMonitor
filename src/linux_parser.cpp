@@ -5,6 +5,7 @@
 #include <vector>
 #include <filesystem>
 #include <iostream>
+#include <map>
 
 #include "linux_parser.h"
 
@@ -12,6 +13,7 @@ using std::stof;
 using std::string;
 using std::to_string;
 using std::vector;
+using std::map;
 
 string readFromFile(const string& path){
   string res;
@@ -45,7 +47,7 @@ string readFromFile(const string& path, const string& keyword){
   return res;
 }
 
-vector<string> readFromFile(const string& path, const string& keyword, const int& argc){
+map<string, long> readFromFile(const string& path, const vector<string>& keywords, const int& argc){
   vector<string> res;
   std::ifstream stream(path);
   if (stream.is_open()) {
@@ -54,6 +56,7 @@ vector<string> readFromFile(const string& path, const string& keyword, const int
       std::istringstream linestream(line);
       std::string input;
       linestream >> input;
+      #TODO: change logic to extract the keywords
       if(argc > 1){
         std::istringstream iss(keyword);
         vector<string> args(std::istream_iterator<string>{iss},
@@ -118,7 +121,9 @@ vector<int> LinuxParser::Pids() {
 }
 
 // TODO: Read and return the system memory utilization
-float LinuxParser::MemoryUtilization() { return 0.0; }
+float LinuxParser::MemoryUtilization() { 
+  vector<string> readings = readFromFile(kProcDirectory + kMeminfoFilename, 4)
+ }
 
 // TODO: Read and return the system uptime
 long LinuxParser::UpTime() { 
