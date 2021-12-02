@@ -5,7 +5,8 @@
 #include <vector>
 #include <filesystem>
 #include <iostream>
-#include <map>
+#include <unordered_map>
+#include <algorithm>
 
 #include "linux_parser.h"
 
@@ -13,7 +14,7 @@ using std::stof;
 using std::string;
 using std::to_string;
 using std::vector;
-using std::map;
+using std::unordered_map;
 
 string readFromFile(const string& path){
   string res;
@@ -47,8 +48,8 @@ string readFromFile(const string& path, const string& keyword){
   return res;
 }
 
-map<string, long> readFromFile(const string& path, const vector<string>& keywords, const int& argc){
-  vector<string> res;
+unordered_map<string, long> readFromFile(const string& path, const vector<string>& keywords, const size_t& argc){
+  unordered_map<string, long> res;
   std::ifstream stream(path);
   if (stream.is_open()) {
     std::string line;
@@ -56,17 +57,19 @@ map<string, long> readFromFile(const string& path, const vector<string>& keyword
       std::istringstream linestream(line);
       std::string input;
       linestream >> input;
-      #TODO: change logic to extract the keywords
-      if(argc > 1){
-        std::istringstream iss(keyword);
-        vector<string> args(std::istream_iterator<string>{iss},
-                            std::istream_iterator<string>());
-        res = args;
-        break;
+      //TODO: change logic to extract the keywords
+      if (std::find(keywords.begin(), keywords.end(), input) != keywords.end()) {
+        // Element in vector.
+        long val;
+        linestream >> val;
+        res[input] = val;
       }
     }
   }
-  return res;
+  if(res.size() == argc){
+    return res;
+  }
+  return {};
 }
 
 // DONE: An example of how to read data from the filesystem
@@ -122,7 +125,11 @@ vector<int> LinuxParser::Pids() {
 
 // TODO: Read and return the system memory utilization
 float LinuxParser::MemoryUtilization() { 
-  vector<string> readings = readFromFile(kProcDirectory + kMeminfoFilename, 4)
+  vector<string> keywords{"MemTotal", "MemFree", "MemAvailable", "Buffers"};
+  std::unordered_map<string, long> readings = readFromFile(kProcDirectory + kMeminfoFilename, keywords, 4);
+  for(const auto& el: readings){
+    
+  }
  }
 
 // TODO: Read and return the system uptime
