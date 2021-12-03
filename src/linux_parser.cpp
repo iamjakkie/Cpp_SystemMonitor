@@ -16,8 +16,8 @@ using std::to_string;
 using std::vector;
 using std::unordered_map;
 
-string readFromFile(const string& path){
-  string res;
+long readFromFile(const string& path){
+  long res;
   std::ifstream stream(path);
   if (stream.is_open()) {
     std::string line;
@@ -28,8 +28,8 @@ string readFromFile(const string& path){
   return res;
 }
 
-string readFromFile(const string& path, const string& keyword){
-  string res;
+long readFromFile(const string& path, const string& keyword){
+  long res;
   std::ifstream stream(path);
   if (stream.is_open()) {
     std::string line;
@@ -50,22 +50,7 @@ string readFromFile(const string& path, const string& keyword){
 
 unordered_map<string, long> readFromFile(const string& path, const vector<string>& keywords, const size_t& argc){
   unordered_map<string, long> res;
-  std::ifstream stream(path);
-  if (stream.is_open()) {
-    std::string line;
-    while (std::getline(stream, line)) {
-      std::istringstream linestream(line);
-      std::string input;
-      linestream >> input;
-      //TODO: change logic to extract the keywords
-      if (std::find(keywords.begin(), keywords.end(), input) != keywords.end()) {
-        // Element in vector.
-        long val;
-        linestream >> val;
-        res[input] = val;
-      }
-    }
-  }
+  
   if(res.size() == argc){
     return res;
   }
@@ -125,17 +110,31 @@ vector<int> LinuxParser::Pids() {
 
 // TODO: Read and return the system memory utilization
 float LinuxParser::MemoryUtilization() { 
-  vector<string> keywords{"MemTotal", "MemFree", "MemAvailable", "Buffers"};
-  std::unordered_map<string, long> readings = readFromFile(kProcDirectory + kMeminfoFilename, keywords, 4);
-  for(const auto& el: readings){
-    
+  long memFree, memTotal;
+  std::ifstream stream(kProcDirectory + kMeminfoFilename);
+  std::string key;
+  long val;
+  std::string units;
+  if (stream.is_open()) {
+    std::string line;
+    while (std::getline(stream, line)) {
+      std::istringstream linestream(line);
+      
+      linestream >> key >> val >> units;
+      if(key == "MemTotal:"){
+        memTotal = val;
+      }
+      if(key == "MemFree:"){
+        memFree = val;
+      }
+    }
   }
+  return (memTotal - memFree)/memTotal;
  }
 
 // TODO: Read and return the system uptime
 long LinuxParser::UpTime() { 
-  string val = readFromFile(string(kProcDirectory + kUptimeFilename));
-  return stod(val);
+  return readFromFile(string(kProcDirectory + kUptimeFilename));
 }
 
 // TODO: Read and return the number of jiffies for the system
@@ -156,14 +155,12 @@ long LinuxParser::IdleJiffies() { return 0; }
 vector<string> LinuxParser::CpuUtilization() { return {}; }
 
 int LinuxParser::TotalProcesses() { 
-  string val = readFromFile(kProcDirectory + kStatFilename);
-  return std::stol(val);
+  return readFromFile(kProcDirectory + kStatFilename, "processes");
  }
 
 // TODO: Read and return the number of running processes
 int LinuxParser::RunningProcesses() { 
-  string val = readFromFile(kProcDirectory + kStatFilename);
-  return std::stol(val);
+  return readFromFile(kProcDirectory + kStatFilename, "procs_running");
  }
 
 // TODO: Read and return the command associated with a process
