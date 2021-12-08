@@ -152,7 +152,9 @@ long LinuxParser::ActiveJiffies() { return 0; }
 long LinuxParser::IdleJiffies() { return 0; }
 
 // TODO: Read and return CPU utilization
-vector<string> LinuxParser::CpuUtilization() { return {}; }
+vector<string> LinuxParser::CpuUtilization() { 
+  
+ }
 
 int LinuxParser::TotalProcesses() { 
   return readFromFile(kProcDirectory + kStatFilename, "processes");
