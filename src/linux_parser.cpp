@@ -152,9 +152,25 @@ long LinuxParser::ActiveJiffies() { return 0; }
 long LinuxParser::IdleJiffies() { return 0; }
 
 // TODO: Read and return CPU utilization
-vector<string> LinuxParser::CpuUtilization() { 
-  
+float LinuxParser::CpuUtilizationTotal() { 
+  string cpu, line;
+  long user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice;
+  std::ifstream stream(kProcDirectory + kStatFilename);
+  if (stream.is_open()) {
+    std::getline(stream, line);
+    std::istringstream linestream(line);
+    linestream >> cpu >> user >> nice >> system >> idle >> iowait >> irq >> softirq >> steal >> guest >> guest_nice;
+  }
+  long idle_total, nonidle, total;
+  idle_total = idle + iowait;
+  nonidle = user + nice + system + irq + softirq + steal;
+  total = idle_total + nonidle;
+
+
+  return (total - idle)/total;
  }
+
+vector<string> LinuxParser::CpuUtilization() { return {}; }
 
 int LinuxParser::TotalProcesses() { 
   return readFromFile(kProcDirectory + kStatFilename, "processes");
@@ -185,4 +201,4 @@ string LinuxParser::User(int pid[[maybe_unused]]) { return string(); }
 // REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::UpTime(int pid[[maybe_unused]]) { return 0; }
 
-int LinuxParser::Cpus() { }
+int LinuxParser::Cpus() { return 0; }
