@@ -152,7 +152,7 @@ long LinuxParser::ActiveJiffies() { return 0; }
 long LinuxParser::IdleJiffies() { return 0; }
 
 // TODO: Read and return CPU utilization
-float LinuxParser::CpuUtilizationTotal() { 
+std::pair<long, long> LinuxParser::CurrentCpuUtilization() { 
   string cpu, line;
   long user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice;
   std::ifstream stream(kProcDirectory + kStatFilename);
@@ -167,8 +167,19 @@ float LinuxParser::CpuUtilizationTotal() {
   total = idle_total + nonidle;
 
 
-  return (total - idle)/total;
+  return std::make_pair(idle_total, total);
  }
+
+float LinuxParser::CpuUtilizationTotal() {
+  auto prev = CurrentCpuUtilization();
+  sleep(1);
+  auto curr = CurrentCpuUtilization();
+
+  long idle_change = curr.first - prev.first;
+  long total_change = curr.second - prev.second;
+
+  return (total_change-idle_change)/total_change;
+} 
 
 vector<string> LinuxParser::CpuUtilization() { return {}; }
 

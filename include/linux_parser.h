@@ -41,6 +41,7 @@ enum CPUStates {
   kGuest_,
   kGuestNice_
 };
+std::pair<long, long> CurrentCpuUtilization();
 float CpuUtilizationTotal();
 std::vector<std::string> CpuUtilization();
 long Jiffies();
