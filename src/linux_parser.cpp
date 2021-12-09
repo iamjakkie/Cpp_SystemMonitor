@@ -212,4 +212,21 @@ string LinuxParser::User(int pid[[maybe_unused]]) { return string(); }
 // REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::UpTime(int pid[[maybe_unused]]) { return 0; }
 
-int LinuxParser::Cpus() { return 0; }
+size_t LinuxParser::Cpus() { 
+  size_t cpus;
+  string cpu, line;
+  long user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice;
+  std::ifstream stream(kProcDirectory + kStatFilename);
+  if (stream.is_open()) {
+    while(std::getline(stream, line)){
+      std::istringstream linestream(line);
+      linestream >> cpu >> user >> nice >> system >> idle >> iowait >> irq >> softirq >> steal >> guest >> guest_nice;
+      if (cpu.find("cpu") != std::string::npos) {
+          cpus++;
+      } else{
+        break;
+      }
+    }
+  }
+  return cpus-=1;
+}
