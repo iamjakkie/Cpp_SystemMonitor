@@ -3,7 +3,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include <filesystem>
+// #include <filesystem>
 #include <iostream>
 #include <unordered_map>
 #include <algorithm>
@@ -95,16 +95,30 @@ string LinuxParser::Kernel() {
 
 // BONUS: Update this to use std::filesystem
 vector<int> LinuxParser::Pids() {
+//   vector<int> pids;
+//   for(const auto& file : std::filesystem::directory_iterator(kProcDirectory.c_str())){
+//     if(!std::filesystem::is_directory(file)){
+//       string filename = std::filesystem::path(file).filename();
+//       if (std::all_of(filename.begin(), filename.end(), isdigit)) {
+//         int pid = stoi(filename);
+//         pids.push_back(pid);
+//       }
+//     }
+//   }
+//   return pids;
   vector<int> pids;
-  for(const auto& file : std::filesystem::directory_iterator(kProcDirectory.c_str())){
-    if(!std::filesystem::is_directory(file)){
-      string filename = std::filesystem::path(file).filename();
-      if (std::all_of(filename.begin(), filename.end(), isdigit)) {
-        int pid = stoi(filename);
+ DIR* directory = opendir(kProcDirectory.c_str());
+ struct dirent* file;
+  while ((file = readdir(directory)) != nullptr) {
+   if (file->d_type == DT_DIR) {
+     string filename(file->d_name);
+     if (std::all_of(filename.begin(), filename.end(), isdigit)) {
+       int pid = stoi(filename);
         pids.push_back(pid);
       }
     }
   }
+  closedir(directory);
   return pids;
 }
 
@@ -129,7 +143,7 @@ float LinuxParser::MemoryUtilization() {
       }
     }
   }
-  return (memTotal - memFree)/memTotal;
+  return (memTotal - memFree)*1.0/memTotal*1.0;
  }
 
 // TODO: Read and return the system uptime
@@ -178,7 +192,7 @@ float LinuxParser::CpuUtilizationTotal() {
   long idle_change = curr.first - prev.first;
   long total_change = curr.second - prev.second;
 
-  return (total_change-idle_change)/total_change;
+  return (total_change-idle_change)*1.0/total_change*1.0;
 } 
 
 vector<string> LinuxParser::CpuUtilization() { return {}; }
@@ -221,6 +235,7 @@ size_t LinuxParser::Cpus() {
     while(std::getline(stream, line)){
       std::istringstream linestream(line);
       linestream >> cpu >> user >> nice >> system >> idle >> iowait >> irq >> softirq >> steal >> guest >> guest_nice;
+      std::cout << cpu;
       if (cpu.find("cpu") != std::string::npos) {
           cpus++;
       } else{
@@ -228,5 +243,5 @@ size_t LinuxParser::Cpus() {
       }
     }
   }
-  return cpus-=1;
+  return cpus-1;
 }
