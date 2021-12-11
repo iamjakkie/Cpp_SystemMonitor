@@ -179,7 +179,11 @@ std::pair<long, long> LinuxParser::CurrentCpuUtilization() {
   idle_total = idle + iowait;
   nonidle = user + nice + system + irq + softirq + steal;
   total = idle_total + nonidle;
-
+  long totalUserTime = user - guest;
+  long totalNiceTime = nice - guest_nice;
+  long totalIdleTime = idle + iowait;
+  long totalSystem = system + irq + softirq;
+  long totalVirtualTime = guest + guest_nice;
 
   return std::make_pair(idle_total, total);
  }
