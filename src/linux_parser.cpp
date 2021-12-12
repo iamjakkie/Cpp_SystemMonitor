@@ -3,7 +3,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
-// #include <filesystem>
+#include <filesystem>
 #include <iostream>
 #include <unordered_map>
 #include <algorithm>
@@ -57,7 +57,6 @@ unordered_map<string, long> readFromFile(const string& path, const vector<string
   return {};
 }
 
-// DONE: An example of how to read data from the filesystem
 string LinuxParser::OperatingSystem() {
   string line;
   string key;
@@ -80,7 +79,6 @@ string LinuxParser::OperatingSystem() {
   return value;
 }
 
-// DONE: An example of how to read data from the filesystem
 string LinuxParser::Kernel() {
   string os, kernel, version;
   string line;
@@ -93,36 +91,20 @@ string LinuxParser::Kernel() {
   return kernel;
 }
 
-// BONUS: Update this to use std::filesystem
 vector<int> LinuxParser::Pids() {
-//   vector<int> pids;
-//   for(const auto& file : std::filesystem::directory_iterator(kProcDirectory.c_str())){
-//     if(!std::filesystem::is_directory(file)){
-//       string filename = std::filesystem::path(file).filename();
-//       if (std::all_of(filename.begin(), filename.end(), isdigit)) {
-//         int pid = stoi(filename);
-//         pids.push_back(pid);
-//       }
-//     }
-//   }
-//   return pids;
   vector<int> pids;
- DIR* directory = opendir(kProcDirectory.c_str());
- struct dirent* file;
-  while ((file = readdir(directory)) != nullptr) {
-   if (file->d_type == DT_DIR) {
-     string filename(file->d_name);
-     if (std::all_of(filename.begin(), filename.end(), isdigit)) {
-       int pid = stoi(filename);
+  for(const auto& file : std::filesystem::directory_iterator(kProcDirectory.c_str())){
+    if(!std::filesystem::is_directory(file)){
+      string filename = std::filesystem::path(file).filename();
+      if (std::all_of(filename.begin(), filename.end(), isdigit)) {
+        int pid = stoi(filename);
         pids.push_back(pid);
       }
     }
   }
-  closedir(directory);
   return pids;
 }
 
-// TODO: Read and return the system memory utilization
 float LinuxParser::MemoryUtilization() { 
   long memFree, memTotal;
   std::ifstream stream(kProcDirectory + kMeminfoFilename);
@@ -146,30 +128,42 @@ float LinuxParser::MemoryUtilization() {
   return (memTotal - memFree)*1.0/memTotal*1.0;
  }
 
-// TODO: Read and return the system uptime
 long LinuxParser::UpTime() { 
   return readFromFile(string(kProcDirectory + kUptimeFilename));
 }
 
-// TODO: Read and return the number of jiffies for the system
-long LinuxParser::Jiffies() { return 0; }
+long LinuxParser::Jiffies() { return CurrentCpuUtilization()["jiffies"]; }
 
 
 // TODO: Read and return the number of active jiffies for a PID
 // REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::ActiveJiffies(int pid[[maybe_unused]]) { return 0; }
+long LinuxParser::ActiveJiffies(int pid) { return CurrentCpuUtilization(pid)["jiffies"]; }
 
-// TODO: Read and return the number of active jiffies for the system
-long LinuxParser::ActiveJiffies() { return 0; }
+long LinuxParser::ActiveJiffies() { 
+  std::ifstream filestream(kProcDirectory + kUptimeFilename);
+  long upTime = 0;
+  long idleTime;
+  if (filestream.is_open()) {
+      std::string line;
+      std::getline(filestream, line);
+      std::istringstream linestream(line);
+      linestream >> upTime >> idleTime;
+  } 
+  return 0; 
+ }
 
-// TODO: Read and return the number of idle jiffies for the system
-long LinuxParser::IdleJiffies() { return 0; }
+long LinuxParser::IdleJiffies() { return CurrentCpuUtilization()["idleJiffies"]; }
 
-// TODO: Read and return CPU utilization
-unordered_map<string, long> LinuxParser::CurrentCpuUtilization() { 
+unordered_map<string, long> LinuxParser::CurrentCpuUtilization(int pid) { 
+  unordered_map<string, long> res;
   string cpu, line;
   long user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice;
-  std::ifstream stream(kProcDirectory + kStatFilename);
+  std::ifstream stream;
+  if(pid == -1){
+    std::ifstream stream(kProcDirectory + kStatFilename);
+  } else{
+    std::ifstream stream(kProcDirectory + '/' + to_string(pid) + '/' + kStatFilename);
+  }
   if (stream.is_open()) {
     std::getline(stream, line);
     std::istringstream linestream(line);
@@ -184,8 +178,12 @@ unordered_map<string, long> LinuxParser::CurrentCpuUtilization() {
   long totalIdleTime = idle + iowait;
   long totalSystem = system + irq + softirq;
   long totalVirtualTime = guest + guest_nice;
-
-  return std::make_pair(idle_total, total);
+  long jiffies = totalUserTime + totalNiceTime + totalIdleTime + totalSystem + totalVirtualTime;
+  res["idle"] = idle_total;
+  res["total"] = total;
+  res["jiffies"] = jiffies;
+  res["idleJiffies"] = totalIdleTime;
+  return res;
  }
 
 float LinuxParser::CpuUtilizationTotal() {
@@ -193,8 +191,8 @@ float LinuxParser::CpuUtilizationTotal() {
   sleep(1);
   auto curr = CurrentCpuUtilization();
 
-  long idle_change = curr.first - prev.first;
-  long total_change = curr.second - prev.second;
+  long idle_change = curr["idle"] - prev["idle"];
+  long total_change = curr["total"] - prev["total"];
 
   return (total_change-idle_change)*1.0/total_change*1.0;
 } 
@@ -205,7 +203,6 @@ int LinuxParser::TotalProcesses() {
   return readFromFile(kProcDirectory + kStatFilename, "processes");
  }
 
-// TODO: Read and return the number of running processes
 int LinuxParser::RunningProcesses() { 
   return readFromFile(kProcDirectory + kStatFilename, "procs_running");
  }
