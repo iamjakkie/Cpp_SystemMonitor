@@ -166,7 +166,7 @@ long LinuxParser::ActiveJiffies() { return 0; }
 long LinuxParser::IdleJiffies() { return 0; }
 
 // TODO: Read and return CPU utilization
-std::pair<long, long> LinuxParser::CurrentCpuUtilization() { 
+unordered_map<string, long> LinuxParser::CurrentCpuUtilization() { 
   string cpu, line;
   long user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice;
   std::ifstream stream(kProcDirectory + kStatFilename);
