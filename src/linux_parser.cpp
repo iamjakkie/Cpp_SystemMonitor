@@ -137,7 +137,7 @@ long LinuxParser::Jiffies() { return CurrentCpuUtilization()["jiffies"]; }
 
 // TODO: Read and return the number of active jiffies for a PID
 // REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::ActiveJiffies(int pid) { return CurrentCpuUtilization(pid)["jiffies"]; }
+long LinuxParser::ActiveJiffies(int pid) { return PidUtilization(pid)["activeJiffies"]; }
 
 long LinuxParser::ActiveJiffies() { 
   std::ifstream filestream(kProcDirectory + kUptimeFilename);
@@ -154,16 +154,29 @@ long LinuxParser::ActiveJiffies() {
 
 long LinuxParser::IdleJiffies() { return CurrentCpuUtilization()["idleJiffies"]; }
 
-unordered_map<string, long> LinuxParser::CurrentCpuUtilization(int pid) { 
+unordered_map<string, long> LinuxParser::PidUtilization(int pid) {
+  unordered_map<string, long> res;
+  std::ifstream stream(kProcDirectory + '/' + to_string(pid) + '/' + kStatFilename);
+  if (stream.is_open()) {
+      string line, ignore;
+      long utime, stime, cutime, cstime, starttime;
+      std::getline(stream, line);
+      std::istringstream linestream(line);
+      for(int i = 0; i < 13; i++) linestream >> ignore;
+      linestream >> utime >> stime >> cutime >> cstime ;
+      for(int i = 0; i < 4; i++) linestream >> ignore;
+      linestream >> starttime;
+      
+      long activeJiffies = utime + stime + cutime + cstime +starttime;
+      res["activeJiffies"] = activeJiffies;
+  }
+}
+
+unordered_map<string, long> LinuxParser::CurrentCpuUtilization() { 
   unordered_map<string, long> res;
   string cpu, line;
   long user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice;
-  std::ifstream stream;
-  if(pid == -1){
-    std::ifstream stream(kProcDirectory + kStatFilename);
-  } else{
-    std::ifstream stream(kProcDirectory + '/' + to_string(pid) + '/' + kStatFilename);
-  }
+  std::ifstream stream(kProcDirectory + kStatFilename);
   if (stream.is_open()) {
     std::getline(stream, line);
     std::istringstream linestream(line);

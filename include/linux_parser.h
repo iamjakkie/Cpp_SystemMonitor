@@ -41,7 +41,8 @@ enum CPUStates {
   kGuest_,
   kGuestNice_
 };
-std::unordered_map<std::string, long> CurrentCpuUtilization(int pid = -1);
+std::unordered_map<std::string, long> CurrentCpuUtilization();
+std::unordered_map<std::string, long> PidUtilization(int pid);
 float CpuUtilizationTotal();
 std::vector<std::string> CpuUtilization();
 long Jiffies();
