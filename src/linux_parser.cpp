@@ -218,8 +218,6 @@ int LinuxParser::RunningProcesses() {
   return readFromFile(kProcDirectory + kStatFilename, "procs_running");
  }
 
-// TODO: Read and return the command associated with a process
-// REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::Command(int pid) { 
   std::ifstream stream(kProcDirectory + "/" + to_string(pid) + "/" + kCmdlineFilename);
   std::string line ;
@@ -230,7 +228,7 @@ string LinuxParser::Command(int pid) {
  }
 
 string LinuxParser::Ram(int pid]) { 
-  std::ifstream stream(kProcDirectory + "/" + to_string(pid) + "/" + kCmdlineFilename);
+  std::ifstream stream(kProcDirectory + "/" + to_string(pid) + "/" + kStatusFilename);
   std::string line, key, units;
   long val,mem;
   if (stream.is_open()) {
@@ -247,9 +245,23 @@ string LinuxParser::Ram(int pid]) {
   }
  }
 
-// TODO: Read and return the user ID associated with a process
-// REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Uid(int pid[[maybe_unused]]) { return string(); }
+string LinuxParser::Uid(int pid) { 
+  std::ifstream stream(kProcDirectory + "/" + to_string(pid) + "/" + kStatusFilename);
+  std::string line, key, units;
+  long val,mem;
+  if (stream.is_open()) {
+    std::getline(stream, line);
+    while (std::getline(stream, line)) {
+      std::istringstream linestream(line);
+      
+      linestream >> key >> val >> units;
+      if(key == "Uid:"){
+        mem = val;
+        return to_string(mem/1024);
+      }
+    }
+  }
+ }
 
 // TODO: Read and return the user associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
