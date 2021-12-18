@@ -168,8 +168,13 @@ unordered_map<string, long> LinuxParser::PidUtilization(int pid) {
       long activeJiffies = utime + stime + cutime + cstime +starttime;
       res["activeJiffies"] = activeJiffies;
 
-      float totalTime = LinuxParser::UpTime(pid) - (starttime/sysconf(_SC_CLK_TCK))
+      float elapsedTime = LinuxParser::UpTime() - (starttime/sysconf(_SC_CLK_TCK));
+      float totalTime = LinuxParser::UpTime(pid) - (starttime/sysconf(_SC_CLK_TCK));
+
+      res["utilization"] = totalTime*1.0/elapsedTime;
+
   }
+  return res;
 }
 
 unordered_map<string, long> LinuxParser::CurrentCpuUtilization() { 
