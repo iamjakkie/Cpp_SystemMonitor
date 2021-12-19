@@ -312,11 +312,12 @@ long LinuxParser::UpTime(int pid) {
       std::string ignore;
       for(int i = 0; i < 21; i++) linestream >> ignore;
       linestream >> starttime;
-      struct timeval tv;
-      gettimeofday(&tv, 0);
-      std::time_t now = std::time(0);
-      std::time_t elapsedTime = LinuxParser::UpTime() - (starttime/sysconf(_SC_CLK_TCK));
-      return elapsedTime;
+      // struct timeval tv;
+      // gettimeofday(&tv, 0);
+      // std::time_t now = std::time(0);
+      // std::time_t elapsedTime = LinuxParser::UpTime() - (starttime/sysconf(_SC_CLK_TCK));
+      // return elapsedTime;
+      return starttime*1.0 / sysconf(_SC_CLK_TCK);
   }
   return starttime; 
  }
