@@ -93,11 +93,19 @@ string LinuxParser::Kernel() {
 
 vector<int> LinuxParser::Pids() {
   vector<int> pids;
-  for(const auto& file : std::filesystem::directory_iterator(kProcDirectory.c_str())){
-    if(!std::filesystem::is_directory(file)){
-      string filename = std::filesystem::path(file).filename();
+  // for(const auto& file : std::filesystem::directory_iterator(kProcDirectory.c_str())){
+  //   if(std::filesystem::is_directory(file)){
+  //     string filename = std::filesystem::path(file).filename();
+  //     if (std::all_of(filename.begin(), filename.end(), isdigit)) {
+  //       int pid = stoi(filename);
+  //     }
+  //   }
+  // }
+  for(const auto& file :std::filesystem::directory_iterator(kProcDirectory.c_str())) {
+    auto filename = file.path().filename().generic_string();
+    if (std::filesystem::is_directory(file.status())) {
       if (std::all_of(filename.begin(), filename.end(), isdigit)) {
-        int pid = stoi(filename);
+        int pid = std::stoi(filename);
         pids.push_back(pid);
       }
     }
@@ -291,7 +299,24 @@ string LinuxParser::User(int pid) {
 
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::UpTime(int pid[[maybe_unused]]) { return 0; }
+long LinuxParser::UpTime(int pid) { 
+  std::ifstream stream(kProcDirectory + "/" + to_string(pid) + "/" + kStatFilename);
+  long starttime = 0;
+  if (stream.is_open()) {
+      std::string line;
+      std::getline(stream, line);
+      std::istringstream linestream(line);
+      std::string ignore;
+      for(int i = 0; i < 21; i++) linestream >> ignore;
+      linestream >> starttime;
+      struct timeval tv;
+      gettimeofday(&tv, 0);
+      std::time_t now = std::time(0);
+      std::time_t elapsedTime = LinuxParser::UpTime() - (starttime/sysconf(_SC_CLK_TCK));
+      return elapsedTime;
+  }
+  return starttime; 
+ }
 
 size_t LinuxParser::Cpus() { 
   size_t cpus;
