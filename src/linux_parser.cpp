@@ -1,6 +1,7 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <sstream>
+#include <sys/time.h>
 #include <string>
 #include <vector>
 #include <filesystem>
@@ -146,17 +147,22 @@ long LinuxParser::Jiffies() { return CurrentCpuUtilization()["jiffies"]; }
 long LinuxParser::ActiveJiffies(int pid) { return PidUtilization(pid)["activeJiffies"]; }
 
 long LinuxParser::ActiveJiffies() { 
-  std::ifstream filestream(kProcDirectory + kUptimeFilename);
-  long upTime = 0;
-  long idleTime;
-  if (filestream.is_open()) {
-      std::string line;
-      std::getline(filestream, line);
-      std::istringstream linestream(line);
-      linestream >> upTime >> idleTime;
-  } 
-  return 0; 
+  // std::ifstream filestream(kProcDirectory + kUptimeFilename);
+  // long upTime = 0;
+  // long idleTime;
+  // if (filestream.is_open()) {
+  //     std::string line;
+  //     std::getline(filestream, line);
+  //     std::istringstream linestream(line);
+  //     linestream >> upTime >> idleTime;
+  // } 
+  // return 0; 
+  return CurrentCpuUtilization()["jiffies"];
  }
+
+float LinuxParser::CpuUtilization(int pid){
+  return PidUtilization(pid)["utilization"];
+}
 
 long LinuxParser::IdleJiffies() { return CurrentCpuUtilization()["idleJiffies"]; }
 
@@ -173,14 +179,15 @@ unordered_map<string, long> LinuxParser::PidUtilization(int pid) {
       for(int i = 0; i < 4; i++) linestream >> ignore;
       linestream >> starttime;
       
-      long activeJiffies = utime + stime + cutime + cstime +starttime;
+      long activeJiffies = (utime + stime + cutime + cstime) / sysconf(_SC_CLK_TCK);
       res["activeJiffies"] = activeJiffies;
 
-      float elapsedTime = LinuxParser::UpTime() - (starttime/sysconf(_SC_CLK_TCK));
-      float totalTime = LinuxParser::UpTime(pid) - (starttime/sysconf(_SC_CLK_TCK));
+      // float elapsedTime = LinuxParser::UpTime() - (starttime/sysconf(_SC_CLK_TCK));
+      // float totalTime = LinuxParser::UpTime(pid) - (starttime/sysconf(_SC_CLK_TCK));
 
-      res["utilization"] = totalTime*1.0/elapsedTime;
-
+      // res["utilization"] = totalTime*1.0/elapsedTime;
+      long jiffies = LinuxParser::ActiveJiffies();
+      res["utilization"] = activeJiffies*1.0 / jiffies;
   }
   return res;
 }
@@ -222,8 +229,6 @@ float LinuxParser::CpuUtilizationTotal() {
 
   return (total_change-idle_change)*1.0/total_change*1.0;
 } 
-
-vector<string> LinuxParser::CpuUtilization() { return {}; }
 
 int LinuxParser::TotalProcesses() { 
   return readFromFile(kProcDirectory + kStatFilename, "processes");
@@ -297,8 +302,6 @@ string LinuxParser::User(int pid) {
   }
  }
 
-// TODO: Read and return the uptime of a process
-// REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::UpTime(int pid) { 
   std::ifstream stream(kProcDirectory + "/" + to_string(pid) + "/" + kStatFilename);
   long starttime = 0;
