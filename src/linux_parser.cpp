@@ -49,15 +49,6 @@ long readFromFile(const string& path, const string& keyword){
   return res;
 }
 
-unordered_map<string, long> readFromFile(const string& path, const vector<string>& keywords, const size_t& argc){
-  unordered_map<string, long> res;
-  
-  if(res.size() == argc){
-    return res;
-  }
-  return {};
-}
-
 string LinuxParser::OperatingSystem() {
   string line;
   string key;
@@ -94,14 +85,6 @@ string LinuxParser::Kernel() {
 
 vector<int> LinuxParser::Pids() {
   vector<int> pids;
-  // for(const auto& file : std::filesystem::directory_iterator(kProcDirectory.c_str())){
-  //   if(std::filesystem::is_directory(file)){
-  //     string filename = std::filesystem::path(file).filename();
-  //     if (std::all_of(filename.begin(), filename.end(), isdigit)) {
-  //       int pid = stoi(filename);
-  //     }
-  //   }
-  // }
   for(const auto& file :std::filesystem::directory_iterator(kProcDirectory.c_str())) {
     auto filename = file.path().filename().generic_string();
     if (std::filesystem::is_directory(file.status())) {
@@ -147,16 +130,6 @@ long LinuxParser::Jiffies() { return CurrentCpuUtilization()["jiffies"]; }
 long LinuxParser::ActiveJiffies(int pid) { return PidUtilization(pid)["activeJiffies"]; }
 
 long LinuxParser::ActiveJiffies() { 
-  // std::ifstream filestream(kProcDirectory + kUptimeFilename);
-  // long upTime = 0;
-  // long idleTime;
-  // if (filestream.is_open()) {
-  //     std::string line;
-  //     std::getline(filestream, line);
-  //     std::istringstream linestream(line);
-  //     linestream >> upTime >> idleTime;
-  // } 
-  // return 0; 
   return CurrentCpuUtilization()["jiffies"];
  }
 
@@ -182,10 +155,6 @@ unordered_map<string, long> LinuxParser::PidUtilization(int pid) {
       long activeJiffies = (utime + stime + cutime + cstime) / sysconf(_SC_CLK_TCK);
       res["activeJiffies"] = activeJiffies;
 
-      // float elapsedTime = LinuxParser::UpTime() - (starttime/sysconf(_SC_CLK_TCK));
-      // float totalTime = LinuxParser::UpTime(pid) - (starttime/sysconf(_SC_CLK_TCK));
-
-      // res["utilization"] = totalTime*1.0/elapsedTime;
       long jiffies = LinuxParser::ActiveJiffies();
       res["utilization"] = activeJiffies*1.0 / jiffies;
   }
@@ -263,6 +232,7 @@ string LinuxParser::Ram(int pid) {
       }
     }
   }
+  return "";
  }
 
 string LinuxParser::Uid(int pid) { 
@@ -281,6 +251,7 @@ string LinuxParser::Uid(int pid) {
       }
     }
   }
+  return "";
  }
 
 string LinuxParser::User(int pid) { 
@@ -300,6 +271,7 @@ string LinuxParser::User(int pid) {
       }
     }
   }
+  return "";
  }
 
 long LinuxParser::UpTime(int pid) { 
@@ -312,11 +284,6 @@ long LinuxParser::UpTime(int pid) {
       std::string ignore;
       for(int i = 0; i < 21; i++) linestream >> ignore;
       linestream >> starttime;
-      // struct timeval tv;
-      // gettimeofday(&tv, 0);
-      // std::time_t now = std::time(0);
-      // std::time_t elapsedTime = LinuxParser::UpTime() - (starttime/sysconf(_SC_CLK_TCK));
-      // return elapsedTime;
       return starttime*1.0 / sysconf(_SC_CLK_TCK);
   }
   return starttime; 

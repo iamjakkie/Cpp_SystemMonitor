@@ -32,7 +32,6 @@ void NCursesDisplay::DisplaySystem(System& system, WINDOW* window) {
   int row{0};
   mvwprintw(window, ++row, 2, ("OS: " + system.OperatingSystem()).c_str());
   mvwprintw(window, ++row, 2, ("Kernel: " + system.Kernel()).c_str());
-//   mvwprintw(window, ++row, 2, ("Cpus: " + to_string(system.Cpus())).c_str());
   mvwprintw(window, ++row, 2, "CPU Total: ");
   wattron(window, COLOR_PAIR(1));
   mvwprintw(window, row, 10, "");
