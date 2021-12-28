@@ -90,7 +90,7 @@ void NCursesDisplay::Display(System& system) {
   cbreak();       // terminate ncurses on ctrl + c
   start_color();  // enable color
   
-  int size = system.Processes().size()
+  int size = system.Processes().size();
   int x_max{getmaxx(stdscr)};
   WINDOW* system_window = newwin(9, x_max - 1, 0, 0);
   WINDOW* process_window =

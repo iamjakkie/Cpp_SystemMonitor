@@ -238,7 +238,7 @@ string LinuxParser::Ram(int pid) {
 string LinuxParser::Uid(int pid) { 
   std::ifstream stream(kProcDirectory + "/" + to_string(pid) + "/" + kStatusFilename);
   std::string line, key, units;
-  long val,mem;
+  string val,mem;
   if (stream.is_open()) {
     std::getline(stream, line);
     while (std::getline(stream, line)) {
