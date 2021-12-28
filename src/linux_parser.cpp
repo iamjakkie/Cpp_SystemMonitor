@@ -226,7 +226,7 @@ string LinuxParser::Ram(int pid) {
       std::istringstream linestream(line);
       
       linestream >> key >> val >> units;
-      if(key == "VmSize:"){
+      if(key == "VmRSS:"){
         mem = val;
         return to_string(mem/1024);
       }
@@ -244,10 +244,9 @@ string LinuxParser::Uid(int pid) {
     while (std::getline(stream, line)) {
       std::istringstream linestream(line);
       
-      linestream >> key >> val >> units;
+      linestream >> key >> val;
       if(key == "Uid:"){
-        mem = val;
-        return to_string(mem/1024);
+        return val;
       }
     }
   }
