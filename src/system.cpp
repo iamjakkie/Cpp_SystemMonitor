@@ -21,7 +21,10 @@ vector<Process>& System::Processes() {
     vector<int> pids = LinuxParser::Pids();
     for(const auto& pid:pids){
         Process p(pid);
-        processes_.emplace_back(p);
+        if (p.Ram() != "" && p.User() != "" && p.Command() !=""){
+            processes_.emplace_back(p);
+        }
+        
     }
     return processes_;
  }
