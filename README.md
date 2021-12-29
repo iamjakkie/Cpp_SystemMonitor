@@ -14,8 +14,12 @@ This project uses [Make](https://www.gnu.org/software/make/). The Makefile has f
 
 ![Starting point](/images/starting_monitor.png)
 
-## Finished project
+## Finished project (Docker)
 
 Currently the code works on linux only, future work will include macOS and Windows.
 
 ![Linux](/images/monitor_linux.png)
+
+## Improved monitor for Linux (Ubuntu)
+
+![Ubuntu](/images/ubuntu.png)
