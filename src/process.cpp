@@ -17,7 +17,7 @@ int Process::Pid() { return pid_; }
 
 float Process::CpuUtilization() {
     long totalTime = LinuxParser::ActiveJiffies(pid_);
-  	long seconds = LinuxParser::UpTime() - Process::UpTime();
+  	long seconds = Process::UpTime();
     return (float)totalTime / seconds;
 }
 
